@@ -1,0 +1,61 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class geoTouchHandler_1 : MonoBehaviour
+{
+    public Camera arCamera;
+    public GameObject firstPrizeProxy;
+    public GameObject firstPrize;
+    public GameObject secondPrizeProxy;
+    public GameObject secondPrize;
+    public int totalPrizeCount;
+    public Text scoreText;
+    public AudioSource acquireAudio;
+    public AudioSource victoryAudio;
+    private Touch touch;
+    private Vector3 touchPosition;
+    private int scoreCount = 0;
+    private string successMessage = "";
+
+    void Update()
+    {
+        // Get touches on screen
+        if (Input.touchCount > 0) {
+            touch = Input.GetTouch(0);
+            touchPosition = Input.GetTouch(0).position;
+        
+            // Raycast from first touch
+            if (touch.phase == TouchPhase.Began) {
+                RaycastHit hit;
+                Ray ray = arCamera.ScreenPointToRay(touchPosition);
+            // If raycast hits our GameObject
+                if (Physics.Raycast(ray, out hit)){
+                    if (hit.collider.tag == "Touchable") {
+                        string hitName = hit.collider.gameObject.name;
+                        if (hitName == firstPrize.name) {
+                            scoreCount++;
+                            firstPrize.SetActive(false);
+                            acquireAudio.PlayOneShot(acquireAudio.clip);
+                            secondPrizeProxy.SetActive(true);
+                        }
+                        if (hitName == secondPrize.name) {
+                            scoreCount++;
+                            secondPrizeProxy.SetActive(false);
+                            acquireAudio.PlayOneShot(acquireAudio.clip);
+                        }
+                    }
+                }
+            }
+        }
+
+        scoreText.text = "Acquired: " + scoreCount + "/" + totalPrizeCount + successMessage;
+
+        if (scoreCount == totalPrizeCount) {
+            scoreText.GetComponent<Text>().color = Color.yellow;
+            victoryAudio.PlayOneShot(victoryAudio.clip);
+            successMessage = " - GAME COMPLETED! KA MAU TE WEHI!";
+        }
+    }
+}
